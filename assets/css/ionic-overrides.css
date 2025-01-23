@@ -1,0 +1,14 @@
+:root {
+  --ion-safe-area-top: 20px;
+  --ion-safe-area-bottom: 20px;
+  --highlight-height: 0;
+  --highlight-color-focused: none;
+  --ripple-color: transparent;
+}
+.dark-mode {
+  --ion-background-color: #222428;
+  --ion-text-color: #f4f5f8;
+  --ion-placeholder-color:#f4f5f8;
+  --background-color: #222428;
+  --text-color: #f4f5f8;
+}

@@ -1,0 +1,8 @@
+
+:root {
+  --ion-safe-area-top: 20px;
+  --ion-safe-area-bottom: 20px;
+  --highlight-height: 0;
+  --highlight-color-focused: none;
+  --ripple-color: transparent;
+}

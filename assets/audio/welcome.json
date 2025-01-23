@@ -1,0 +1,31 @@
+{
+  "metadata": {
+    "soundFile": "C:\\Users\\abdul\\OneDrive\\Documents\\Projects\\Threejs\\first-three-js\\public\\audio\\welcome.ogg",
+    "duration": 3.36
+  },
+  "mouthCues": [
+    { "start": 0.00, "end": 0.07, "value": "X" },
+    { "start": 0.07, "end": 0.22, "value": "C" },
+    { "start": 0.22, "end": 0.29, "value": "B" },
+    { "start": 0.29, "end": 0.43, "value": "C" },
+    { "start": 0.43, "end": 0.50, "value": "B" },
+    { "start": 0.50, "end": 0.59, "value": "A" },
+    { "start": 0.59, "end": 0.76, "value": "C" },
+    { "start": 0.76, "end": 0.83, "value": "B" },
+    { "start": 0.83, "end": 0.91, "value": "A" },
+    { "start": 0.91, "end": 1.17, "value": "B" },
+    { "start": 1.17, "end": 1.24, "value": "D" },
+    { "start": 1.24, "end": 1.59, "value": "B" },
+    { "start": 1.59, "end": 1.80, "value": "C" },
+    { "start": 1.80, "end": 1.90, "value": "A" },
+    { "start": 1.90, "end": 1.96, "value": "C" },
+    { "start": 1.96, "end": 2.02, "value": "B" },
+    { "start": 2.02, "end": 2.16, "value": "C" },
+    { "start": 2.16, "end": 2.37, "value": "B" },
+    { "start": 2.37, "end": 2.58, "value": "F" },
+    { "start": 2.58, "end": 2.72, "value": "B" },
+    { "start": 2.72, "end": 2.93, "value": "C" },
+    { "start": 2.93, "end": 3.00, "value": "B" },
+    { "start": 3.00, "end": 3.36, "value": "X" }
+  ]
+}
