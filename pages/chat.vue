@@ -1,7 +1,6 @@
 <template>
   <ion-page>
-    
-    <ion-content v-if="isLoader">
+    <ion-content v-if="isLoader" class="page">
       <div class="loader-section">
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -58,6 +57,12 @@ onMounted(async () => {
   gap: 1rem;
   padding-bottom: 1rem;
   border-bottom: 1px dashed #ccc;
+}
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
 }
 .agent-avatar {
   width: 3rem;

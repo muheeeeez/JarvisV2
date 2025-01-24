@@ -1,3 +1,19 @@
+# Project Start Up
+# Download the Ionic Extention from VSCode
+# Run npm install
+# Run npx nuxi generate
+# Run npx cap sync
+# From the Ionic Extention, click open in Andriod Studio
+
+
+# Documentation
+# Microphone: https://github.com/mozartec/capacitor-microphone/tree/main/src
+# Lip Sync: https://github.com/DanielSWolf/rhubarb-lip-sync
+<!-- # Converting an audio to the Lip Sync Json file run command:  -->
+
+
+
+
 # Nuxt Minimal Starter
 
 Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.

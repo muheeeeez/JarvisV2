@@ -5,23 +5,27 @@
         <ion-back-button default-href="/"></ion-back-button>
       </ion-buttons>
     </ion-toolbar>
+
     <ion-page class="page">
       <div class="progress-bar-container" ref="progressBarContainer">
         <label for="progress-bar">Loading...</label>
         <progress id="progress-bar" value="0" max="100"></progress>
       </div>
+
       <div class="container">
         <ion-card color="light">
           <div>
             <canvas ref="experience" class="container" />
           </div>
         </ion-card>
+
         <!-- Example animations (commented out)
-      <button @click="() => triggerAnimation('thinking')">Think</button>
-      <button @click="() => triggerAnimation('talking')">Talk</button>
-      <button @click="() => triggerAnimation('thankful')">Be Thankful</button>
-      -->
-        <!-- <ion-button @click="playAudio">Play Audio and Lip sync</ion-button> -->
+        <button @click="() => triggerAnimation('thinking')">Think</button>
+        <button @click="() => triggerAnimation('talking')">Talk</button>
+        <button @click="() => triggerAnimation('thankful')">Be Thankful</button>
+        -->
+
+        <ion-button @click="playAudio">Play Audio and Lip sync</ion-button>
         <ion-button @click="updateChat">Chat Now</ion-button>
         <!-- <button @click="stopRecording">Stop Recording</button> -->
         <!-- <audio v-if="audioPath" :src="audioPath" controls></audio> -->
@@ -90,7 +94,6 @@ canvas {
   height: 200px;
   object-fit: cover;
 }
-
 button {
   margin: 10px;
   padding: 10px 20px;
@@ -135,6 +138,7 @@ interface MouthCue {
   end: number;
   value: VisemeKey;
 }
+
 interface LipSyncData {
   metadata: {
     soundFile: string;
@@ -142,6 +146,7 @@ interface LipSyncData {
   };
   mouthCues: MouthCue[];
 }
+
 const corresponding: Record<VisemeKey, string> = {
   A: "viseme_PP",
   B: "viseme_kk",
@@ -163,16 +168,20 @@ const experience = ref<HTMLCanvasElement | null>(null);
 const progressBarContainer = ref<HTMLDivElement | null>(null);
 const { width, height } = useWindowSize();
 const aspectRatio = computed(() => width.value / height.value);
-const scene = new Scene();
 
+// Create the scene
+const scene = new Scene();
 scene.background = new THREE.Color(0xf6f5f2);
 
+// Lights
 const ambientLight = new AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
+
 const directionalLight = new DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
+// Store animation actions
 const animations: Record<string, THREE.AnimationAction> = {};
 const loadingManager = new THREE.LoadingManager();
 
@@ -207,34 +216,46 @@ let isLipsyncActive = false;
 
 function playAudio() {
   const fileLoader = new FileLoader();
-  fileLoader.load("/assets/audio/test.json", (json) => {
-    if (typeof json !== "string") {
-      console.error("Failed to parse JSON: Data is not a string");
-      return;
+  fileLoader.setResponseType("json"); // So it returns JSON
+
+  fileLoader.load(
+    "/assets/audio/test.json",
+    (data) => {
+      // Double cast to ensure TypeScript accepts it as LipSyncData
+      lipsyncDataRef = data as unknown as LipSyncData;
+
+      currentAudio = new Audio("/assets/audio/test.mp3");
+      isLipsyncActive = true;
+      triggerAnimation("nodding");
+
+      currentAudio
+        .play()
+        .catch((err) => console.error("Audio play error:", err));
+
+      currentAudio.addEventListener("ended", () => {
+        isLipsyncActive = false;
+        resetAllMorphTargets();
+      });
+    },
+    undefined,
+    (error) => {
+      console.error("Error loading JSON:", error);
     }
-    lipsyncDataRef = JSON.parse(json);
-    currentAudio = new Audio("/assets/audio/test.mp3");
-    isLipsyncActive = true;
-    triggerAnimation("nodding");
-    currentAudio.play().catch((err) => {
-      console.error("Audio play error:", err);
-    });
-    currentAudio.addEventListener("ended", () => {
-      isLipsyncActive = false;
-      resetAllMorphTargets();
-    });
-  });
+  );
 }
 
 function updateLipsync() {
   if (!isLipsyncActive || !lipsyncDataRef || !currentAudio || !loadedModel) {
     return;
   }
+
   const currentTime = currentAudio.currentTime;
   const activeCue = lipsyncDataRef.mouthCues.find(
     (cue) => currentTime >= cue.start && currentTime <= cue.end
   );
+
   resetAllMorphTargets();
+
   if (activeCue) {
     const morphTargetName = corresponding[activeCue.value];
     loadedModel.traverse((child) => {
@@ -271,10 +292,10 @@ function resetAllMorphTargets() {
 
 onMounted(async () => {
   await nextTick();
+
   startRecording();
-  const progressBar = document.getElementById(
-    "progress-bar"
-  ) as HTMLProgressElement;
+
+  const progressBar = document.getElementById("progress-bar") as HTMLProgressElement;
   progressBarContainer.value = document.querySelector(
     ".progress-bar-container"
   ) as HTMLDivElement;
@@ -283,10 +304,12 @@ onMounted(async () => {
     console.error("Progress bar or container not found.");
     return;
   }
+
   loadingManager.onProgress = (url, loaded, total) => {
     console.log(`Loading: ${url} (${loaded}/${total})`);
     progressBar.value = (loaded / total) * 100;
   };
+
   loadingManager.onLoad = () => {
     console.log("All resources loaded.");
     progressBarContainer.value!.style.display = "none";
@@ -295,6 +318,7 @@ onMounted(async () => {
     }, 3000);
   };
 
+  // Load the GLTF model
   const gltfLoader = new GLTFLoader(loadingManager);
   gltfLoader.load(
     "/assets/images/bruno.glb",
@@ -304,9 +328,12 @@ onMounted(async () => {
         loadedModel.position.set(0.08, 0.3, 2.5);
         loadedModel.scale.set(1, 1, 0.5);
         scene.add(loadedModel);
+
         mixer = new AnimationMixer(loadedModel);
+        // Example: nodding animation
         loadAnimation("nodding", "/assets/animations/Head Nod Yes.fbx");
-        // loadAnimation("waving", "/assets/animations/Waving.fbx");
+
+        // If you want a default "standing" animation, uncomment:
         // loadAnimation("standing", "/assets/animations/Standing.fbx");
       }
     },
@@ -316,13 +343,13 @@ onMounted(async () => {
     }
   );
 
-  // Camera
+  // Create camera
   const camera = new PerspectiveCamera(60, aspectRatio.value, 0.1, 1000);
   camera.position.set(0.1, 1, 3);
   camera.lookAt(0, 0, 0);
   scene.add(camera);
 
-  // Renderer
+  // Create renderer
   function setRenderer() {
     if (experience.value) {
       renderer = new WebGLRenderer({
@@ -331,11 +358,10 @@ onMounted(async () => {
       });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(200, 200);
-
-      // controls = new OrbitControls(camera, renderer.domElement);
     }
   }
 
+  // Animation/render loop
   function loop() {
     if (mixer) mixer.update(clock.getDelta());
     updateLipsync();
