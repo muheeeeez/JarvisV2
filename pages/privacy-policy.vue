@@ -1,13 +1,9 @@
 <template>
-  
+  <div>Welcome to our Privacy Policy</div>
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
-<style>
-
-</style>
+<style></style>

@@ -2,7 +2,6 @@
   <ion-page>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <!-- A custom @click handler so we control behavior when there's no history -->
         <ion-back-button default-href="/" />
       </ion-buttons>
     </ion-toolbar>
@@ -39,7 +38,7 @@
                 <div class="message-timestamp">9:32 AM</div>
               </div>
             </div>
-            <!-- Example custom form component (imported below) -->
+
             <MessageForm />
           </div>
         </ion-card>
@@ -53,32 +52,20 @@ import { ref, computed } from "vue";
 import { useIonRouter } from "@ionic/vue";
 import { useRoute } from "vue-router";
 import MessageForm from "@/components/MessageForm.vue";
-
 const router = useIonRouter();
 const route = useRoute();
-
 const isMessage = ref(true);
-const isLoader = ref(false);
-
-// Show the param if present; otherwise "No value provided"
+// const isLoader = ref(false);
 const nameValue = computed(() => route.query.value || "No value provided");
-
-/**
- * Custom goBack() that falls back to a route with the same query param
- * if there is no actual nav history. Otherwise, just router.back().
- */
-function goBack() {
-  if (router.canGoBack()) {
-    router.back();
-  } else {
-    // Fallback if there's no history:
-    // - Use the same query value if it exists, otherwise "Guest"
-    router.push({
-      path: "/",
-      query: { value: route.query.value || "Guest" },
-    });
-  }
-}
+// function goBack() {
+//   if (router.canGoBack()) {
+//     router.back();
+//     router.push({
+//       path: "/",
+//       query: { value: route.query.value || "Guest" },
+//     });
+//   }
+// }
 </script>
 
 <style scoped>

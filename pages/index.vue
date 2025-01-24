@@ -42,7 +42,6 @@
               label="Your Name"
               label-placement="floating"
               fill="outline"
-              
               error-text="Enter a name to proceed"
               required
               v-model="enteredName"
@@ -65,7 +64,7 @@
 <script setup lang="ts">
 import { useDarkMode } from "@/utils/darkMode.js";
 const enteredName = ref("");
-// const router = useIonRouter();
+
 import { useRouter } from "vue-router";
 
 const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -134,7 +133,7 @@ ion-card {
 .continue-button:hover {
   opacity: 0.9;
 }
-ion-note{
+ion-note {
   background-color: var(--background-color);
   color: var(--text-color);
 }

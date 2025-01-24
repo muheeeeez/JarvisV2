@@ -31,7 +31,6 @@ const isMessage = ref(false);
 const isLoader = ref(true);
 const isChat = ref(true);
 const router = useIonRouter();
-// const goHome = () => router.push("/chat");
 const goBack = () => router.back();
 function handleToggle() {
   isChat.value = false;

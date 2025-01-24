@@ -5,32 +5,40 @@
         <ion-back-button default-href="/"></ion-back-button>
       </ion-buttons>
     </ion-toolbar>
-    <div class="progress-bar-container" ref="progressBarContainer">
-      <label for="progress-bar">Loading...</label>
-      <progress id="progress-bar" value="0" max="100"></progress>
-    </div>
-    <div class="container">
-      <ion-card color="light">
-        <div>
-          <canvas ref="experience" class="container" />
-        </div>
-      </ion-card>
-      <!-- Example animations (commented out)
+    <ion-page class="page">
+      <div class="progress-bar-container" ref="progressBarContainer">
+        <label for="progress-bar">Loading...</label>
+        <progress id="progress-bar" value="0" max="100"></progress>
+      </div>
+      <div class="container">
+        <ion-card color="light">
+          <div>
+            <canvas ref="experience" class="container" />
+          </div>
+        </ion-card>
+        <!-- Example animations (commented out)
       <button @click="() => triggerAnimation('thinking')">Think</button>
       <button @click="() => triggerAnimation('talking')">Talk</button>
       <button @click="() => triggerAnimation('thankful')">Be Thankful</button>
       -->
-      <ion-button @click="playAudio">Chat Now</ion-button>
-      <ion-button @click="updateChat">Chat Now</ion-button>
-      <button @click="stopRecording">Stop Recording</button>
-      <!-- <audio v-if="audioPath" :src="audioPath" controls></audio> -->
-    </div>
+        <!-- <ion-button @click="playAudio">Play Audio and Lip sync</ion-button> -->
+        <ion-button @click="updateChat">Chat Now</ion-button>
+        <!-- <button @click="stopRecording">Stop Recording</button> -->
+        <!-- <audio v-if="audioPath" :src="audioPath" controls></audio> -->
+      </div>
+    </ion-page>
   </client-only>
 </template>
 
 <style scoped>
 client-only {
   background-color: #f6f5f2;
+}
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
 }
 ion-card {
   height: 200px;
@@ -118,8 +126,7 @@ import { useWindowSize } from "@vueuse/core";
 import { defineEmits } from "vue";
 import { useMicrophone } from "@/utils/microphone";
 
-// Only keep stopRecording since it's actually used
-const { stopRecording } = useMicrophone();
+const { stopRecording, startRecording } = useMicrophone();
 
 type VisemeKey = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "X";
 
@@ -158,7 +165,6 @@ const { width, height } = useWindowSize();
 const aspectRatio = computed(() => width.value / height.value);
 const scene = new Scene();
 
-// Simple flat color background
 scene.background = new THREE.Color(0xf6f5f2);
 
 const ambientLight = new AmbientLight(0xffffff, 0.5);
@@ -181,7 +187,7 @@ function loadAnimation(name: string, path: string) {
     const action = mixer!.clipAction(fbx.animations[0]);
     animations[name] = action;
     if (name === "standing") {
-      action.play(); // Default idle
+      action.play();
     }
   });
 }
@@ -195,7 +201,6 @@ function triggerAnimation(name: string) {
   }
 }
 
-// Lip-sync logic
 let lipsyncDataRef: LipSyncData | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let isLipsyncActive = false;
@@ -266,8 +271,10 @@ function resetAllMorphTargets() {
 
 onMounted(async () => {
   await nextTick();
-
-  const progressBar = document.getElementById("progress-bar") as HTMLProgressElement;
+  startRecording();
+  const progressBar = document.getElementById(
+    "progress-bar"
+  ) as HTMLProgressElement;
   progressBarContainer.value = document.querySelector(
     ".progress-bar-container"
   ) as HTMLDivElement;
@@ -276,23 +283,18 @@ onMounted(async () => {
     console.error("Progress bar or container not found.");
     return;
   }
-
   loadingManager.onProgress = (url, loaded, total) => {
     console.log(`Loading: ${url} (${loaded}/${total})`);
     progressBar.value = (loaded / total) * 100;
   };
-
   loadingManager.onLoad = () => {
     console.log("All resources loaded.");
     progressBarContainer.value!.style.display = "none";
-    
     setTimeout(() => {
       console.log("Stopping waving animation...");
-   
     }, 3000);
   };
 
-  // Load the main model
   const gltfLoader = new GLTFLoader(loadingManager);
   gltfLoader.load(
     "/assets/images/bruno.glb",
@@ -304,8 +306,8 @@ onMounted(async () => {
         scene.add(loadedModel);
         mixer = new AnimationMixer(loadedModel);
         loadAnimation("nodding", "/assets/animations/Head Nod Yes.fbx");
-        loadAnimation("waving", "/assets/animations/Waving.fbx");
-        loadAnimation("standing", "/assets/animations/Standing.fbx");
+        // loadAnimation("waving", "/assets/animations/Waving.fbx");
+        // loadAnimation("standing", "/assets/animations/Standing.fbx");
       }
     },
     undefined,
@@ -329,7 +331,7 @@ onMounted(async () => {
       });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setSize(200, 200);
-      // If you ever re-enable OrbitControls, uncomment here:
+
       // controls = new OrbitControls(camera, renderer.domElement);
     }
   }
