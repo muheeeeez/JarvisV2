@@ -26,6 +26,9 @@
   </ion-page>
 </template>
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useIonRouter } from '@ionic/vue'
+
 const isMessage = ref(false);
 const isLoader = ref(true);
 const isChat = ref(true);

@@ -117,17 +117,15 @@ import {
   AmbientLight,
   DirectionalLight,
   Object3D,
-  AnimationMixer,
   Clock,
   FileLoader,
 } from "three";
 import * as THREE from "three";
-import { GLTFLoader, GLTF } from "three/examples/jsm/loaders/GLTFLoader";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useWindowSize } from "@vueuse/core";
 import { defineEmits } from "vue";
-import { useMicrophone } from "@/utils/microphone";
+import { useMicrophone } from "../utils/microphone";
 
 const { stopRecording, startRecording } = useMicrophone();
 
@@ -140,11 +138,15 @@ interface MouthCue {
 }
 
 interface LipSyncData {
-  metadata: {
-    soundFile: string;
-    duration: number;
-  };
+  metadata: { soundFile: string; duration: number };
   mouthCues: MouthCue[];
+}
+
+interface MyGLTF {
+  scene: THREE.Group;
+  scenes: THREE.Group[];
+  animations: THREE.AnimationClip[];
+  cameras: THREE.Camera[];
 }
 
 const corresponding: Record<VisemeKey, string> = {
@@ -160,12 +162,12 @@ const corresponding: Record<VisemeKey, string> = {
 };
 
 let renderer: WebGLRenderer | null = null;
-let mixer: AnimationMixer | null = null;
 let loadedModel: Object3D | null = null;
 
 const clock = new Clock();
 const experience = ref<HTMLCanvasElement | null>(null);
 const progressBarContainer = ref<HTMLDivElement | null>(null);
+
 const { width, height } = useWindowSize();
 const aspectRatio = computed(() => width.value / height.value);
 
@@ -181,33 +183,11 @@ const directionalLight = new DirectionalLight(0xffffff, 1);
 directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 
-// Store animation actions
-const animations: Record<string, THREE.AnimationAction> = {};
 const loadingManager = new THREE.LoadingManager();
 
 const emit = defineEmits(["toggle-false"]);
 function updateChat() {
   emit("toggle-false");
-}
-
-function loadAnimation(name: string, path: string) {
-  const fbxLoader = new FBXLoader(loadingManager);
-  fbxLoader.load(path, (fbx) => {
-    const action = mixer!.clipAction(fbx.animations[0]);
-    animations[name] = action;
-    if (name === "standing") {
-      action.play();
-    }
-  });
-}
-
-function triggerAnimation(name: string) {
-  if (animations[name]) {
-    Object.values(animations).forEach((action) => action.stop());
-    animations[name].reset().play();
-  } else {
-    console.warn(`Animation '${name}' not found.`);
-  }
 }
 
 let lipsyncDataRef: LipSyncData | null = null;
@@ -216,17 +196,17 @@ let isLipsyncActive = false;
 
 function playAudio() {
   const fileLoader = new FileLoader();
-  fileLoader.setResponseType("json"); // So it returns JSON
+  fileLoader.setResponseType("json");
 
   fileLoader.load(
-    "/assets/audio/test.json",
+    "assets/audio/test.json",
     (data) => {
-      // Double cast to ensure TypeScript accepts it as LipSyncData
       lipsyncDataRef = data as unknown as LipSyncData;
-
-      currentAudio = new Audio("/assets/audio/test.mp3");
+      currentAudio = new Audio("assets/audio/test.mp3");
       isLipsyncActive = true;
-      triggerAnimation("nodding");
+
+      // Commented out because we removed animations:
+      // triggerAnimation("nodding");
 
       currentAudio
         .play()
@@ -245,9 +225,7 @@ function playAudio() {
 }
 
 function updateLipsync() {
-  if (!isLipsyncActive || !lipsyncDataRef || !currentAudio || !loadedModel) {
-    return;
-  }
+  if (!isLipsyncActive || !lipsyncDataRef || !currentAudio || !loadedModel) return;
 
   const currentTime = currentAudio.currentTime;
   const activeCue = lipsyncDataRef.mouthCues.find(
@@ -292,13 +270,10 @@ function resetAllMorphTargets() {
 
 onMounted(async () => {
   await nextTick();
-
   startRecording();
 
   const progressBar = document.getElementById("progress-bar") as HTMLProgressElement;
-  progressBarContainer.value = document.querySelector(
-    ".progress-bar-container"
-  ) as HTMLDivElement;
+  progressBarContainer.value = document.querySelector(".progress-bar-container") as HTMLDivElement;
 
   if (!progressBar || !progressBarContainer.value) {
     console.error("Progress bar or container not found.");
@@ -313,28 +288,18 @@ onMounted(async () => {
   loadingManager.onLoad = () => {
     console.log("All resources loaded.");
     progressBarContainer.value!.style.display = "none";
-    setTimeout(() => {
-      console.log("Stopping waving animation...");
-    }, 3000);
   };
 
   // Load the GLTF model
   const gltfLoader = new GLTFLoader(loadingManager);
   gltfLoader.load(
-    "/assets/images/bruno.glb",
-    (gltf: GLTF) => {
+    "assets/images/bruno.glb",
+    (gltf: MyGLTF) => {
       loadedModel = gltf.scene;
       if (loadedModel) {
         loadedModel.position.set(0.08, 0.3, 2.5);
         loadedModel.scale.set(1, 1, 0.5);
         scene.add(loadedModel);
-
-        mixer = new AnimationMixer(loadedModel);
-        // Example: nodding animation
-        loadAnimation("nodding", "/assets/animations/Head Nod Yes.fbx");
-
-        // If you want a default "standing" animation, uncomment:
-        // loadAnimation("standing", "/assets/animations/Standing.fbx");
       }
     },
     undefined,
@@ -363,7 +328,7 @@ onMounted(async () => {
 
   // Animation/render loop
   function loop() {
-    if (mixer) mixer.update(clock.getDelta());
+    // No mixer updates because we removed animations
     updateLipsync();
     if (renderer) renderer.render(scene, camera);
     requestAnimationFrame(loop);

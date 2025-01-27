@@ -62,7 +62,9 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useDarkMode } from "@/utils/darkMode.js";
+import { ref, onMounted } from 'vue'
+import { useIonRouter } from '@ionic/vue'
+import { useDarkMode } from "../utils/darkMode.js";
 const enteredName = ref("");
 
 import { useRouter } from "vue-router";
