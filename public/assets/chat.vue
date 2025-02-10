@@ -14,15 +14,20 @@
       </div>
     </ion-content>
     <ion-content v-else>
-      <ClientOnly>
-        <Speech @toggle-false="handleToggle" />
-      </ClientOnly>
+      <ion-content v-if="isChat">
+        <ClientOnly>
+          <Speech @toggle-false="handleToggle" />
+        </ClientOnly>
+      </ion-content>
+      <ion-content v-else>
+        <Text />
+      </ion-content>
     </ion-content>
   </ion-page>
 </template>
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
-import { useIonRouter } from "@ionic/vue";
+import { ref, onMounted } from 'vue'
+import { useIonRouter } from '@ionic/vue'
 
 const isMessage = ref(false);
 const isLoader = ref(true);

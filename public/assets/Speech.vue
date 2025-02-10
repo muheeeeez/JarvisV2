@@ -1,28 +1,128 @@
 <template>
   <client-only>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-back-button default-href="/"></ion-back-button>
-      </ion-buttons>
-      <ion-button @click="playAudio">Play Audio and Lip sync</ion-button>
-      <ion-button @click="toggleChat" slot="end">Chat Now</ion-button>
-    </ion-toolbar>
     <ion-page class="page">
-      <div class="progress-bar-container" ref="progressBarContainer">
-        <label for="progress-bar">Loading...</label>
-        <progress id="progress-bar" value="0" max="100"></progress>
+      <!-- Container for the canvas and the overlayed button -->
+      <div class="scene-container">
+        <!-- Your Three.js canvas -->
+        <canvas ref="experience"></canvas>
+
+        <!-- Overlay Button -->
+        <button class="overlay-button" @click="playAudio">
+          Play Audio and Lip Sync
+        </button>
       </div>
-      <div>
-        <div class="scene-container">
-          <canvas ref="experience"></canvas>
-        </div>
-      </div>
-      <transition name="slide-up">
-        <Text v-if="showChat" @close="toggleChat" />
-      </transition>
+
+      <!-- You can include additional buttons or elements below if needed -->
+      <ion-button @click="updateChat">Chat Now</ion-button>
     </ion-page>
   </client-only>
 </template>
+
+<!-- <style scoped>
+
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+}
+/* ion-card {
+  height: 200px;
+  width: 200px;
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+} */
+ion-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 65vw;
+  margin: 0 auto;
+}
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 150px;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.progress-bar-container {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+#progress-bar {
+  width: 30%;
+  margin-top: 1rem;
+  height: 1rem;
+}
+label {
+  color: white;
+  font-size: 1.5rem;
+}
+button {
+  margin: 10px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+button:hover {
+  background-color: #0056b3;
+}
+</style> -->
+<style scoped>
+/* Ensure the container is positioned relative so that the absolute positioning of the button is relative to this container */
+.scene-container {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* or another height that suits your layout */
+}
+
+/* Style for your canvas; ensure it fills the container */
+.scene-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* The overlay button styles */
+.overlay-button {
+  position: absolute;
+  top: 20px; /* Adjust the position as needed */
+  right: 20px; /* Adjust the position as needed */
+  z-index: 10; /* Ensure it sits above the canvas */
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.overlay-button:hover {
+  background-color: #0056b3;
+}
+</style>
 <script setup lang="ts">
 import {
   Scene,
@@ -42,10 +142,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { ref, computed, onMounted, nextTick } from "vue";
 import { useWindowSize } from "@vueuse/core";
-import Text from "./Text.vue";
-import { useMicrophone } from "../utils/microphone";
-const { stopRecording, startRecording } = useMicrophone();
-
+import { defineEmits } from "vue";
 type VisemeKey = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "X";
 
 interface MouthCue {
@@ -97,10 +194,11 @@ directionalLight.position.set(5, 5, 5);
 scene.add(directionalLight);
 const animations: Record<string, THREE.AnimationAction> = {};
 const loadingManager = new THREE.LoadingManager();
-const showChat = ref(false);
-function toggleChat() {
-  showChat.value = !showChat.value;
+const emit = defineEmits(["toggle-false"]);
+function updateChat() {
+  emit("toggle-false");
 }
+
 function loadAnimation(name: string, path: string) {
   const fbxLoader = new FBXLoader(loadingManager);
   fbxLoader.load(path, (fbx) => {
@@ -119,7 +217,6 @@ function triggerAnimation(name: string) {
     console.warn(`Animation '${name}' not found.`);
   }
 }
-
 let lipsyncDataRef: LipSyncData | null = null;
 let currentAudio: HTMLAudioElement | null = null;
 let isLipsyncActive = false;
@@ -185,10 +282,8 @@ function resetAllMorphTargets() {
     }
   });
 }
-
 onMounted(async () => {
   await nextTick();
-  // startRecording();
   const progressBar = document.getElementById(
     "progress-bar"
   ) as HTMLProgressElement;
@@ -258,46 +353,3 @@ onMounted(async () => {
   if (renderer) loop();
 });
 </script>
-
-<style scoped>
-.scene-container {
-  width: 100%;
-  height: 100vh;
-}
-.scene-container canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.progress-bar-container {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.8);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-#progress-bar {
-  width: 30%;
-  margin-top: 1rem;
-  height: 1rem;
-}
-.slide-up-enter-active,
-.slide-up-leave-active {
-  transition: transform 0.3s ease;
-}
-.slide-up-enter-from,
-.slide-up-leave-to {
-  transform: translateY(100%);
-}
-.slide-up-enter-to,
-.slide-up-leave-from {
-  transform: translateY(0);
-}
-</style>

@@ -1,74 +1,74 @@
 <template>
-  <ion-page>
-    <ion-toolbar>
-      <ion-buttons slot="start">
-        <ion-back-button default-href="/" />
-      </ion-buttons>
-    </ion-toolbar>
-    <ion-content>
-      <div class="chat-container">
-        <div class="agent-info">
-          <div class="agent-avatar">
-            <ion-img src="/assets/bruno.png"></ion-img>
+  <div class="chat-panel">
+    <ion-page>
+      <ion-content>
+        <div class="chat-container">
+          <div class="agent-info">
+            <div class="agent-avatar">
+              <ion-img src="/assets/bruno.png"></ion-img>
+            </div>
+            <div class="agent-details">
+              <div class="agent-name">Jarvis</div>
+              <div class="agent-subtitle">Algonquin Support Agent</div>
+            </div>
           </div>
-          <div class="agent-details">
-            <div class="agent-name">Jarvis</div>
-            <div class="agent-subtitle">Algonquin Support Agent</div>
-          </div>
-        </div>
-
-        <ion-card v-if="isMessage">
-          <div class="messages-area">
-            <div class="message-row">
-              <div class="avatar-small">
-                <ion-img src="/assets/bruno.png"></ion-img>
-              </div>
-              <div class="message-content">
-                <div class="message-text">
-                  Hello {{ nameValue }}, how can I help you today?
+          <ion-card v-if="isMessage">
+            <div class="messages-area">
+              <div class="message-row">
+                <div class="avatar-small">
+                  <ion-img src="/assets/bruno.png"></ion-img>
                 </div>
-                <div class="message-timestamp">9:30 AM</div>
+                <div class="message-content">
+                  <div class="message-text">
+                    Hello {{ nameValue }}, how can I help you today?
+                  </div>
+                  <div class="message-timestamp">9:30 AM</div>
+                </div>
               </div>
-            </div>
-
-            <div class="message-row reverse">
-              <div class="avatar-initials">{{ nameValue }}</div>
-              <div class="message-content">
-                <div class="message-text">I need help with my account.</div>
-                <div class="message-timestamp">9:32 AM</div>
+              <div class="message-row reverse">
+                <div class="avatar-initials">{{ nameValue }}</div>
+                <div class="message-content">
+                  <div class="message-text">I need help with my account.</div>
+                  <div class="message-timestamp">9:32 AM</div>
+                </div>
               </div>
+              <MessageForm />
             </div>
-
-            <MessageForm />
-          </div>
-        </ion-card>
-      </div>
-    </ion-content>
-  </ion-page>
+          </ion-card>
+        </div>
+      </ion-content>
+    </ion-page>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useIonRouter } from "@ionic/vue";
+import { ref, computed, defineEmits } from "vue";
 import { useRoute } from "vue-router";
 import MessageForm from "@/components/MessageForm.vue";
-const router = useIonRouter();
-const route = useRoute();
+
 const isMessage = ref(true);
-// const isLoader = ref(false);
+const route = useRoute();
 const nameValue = computed(() => route.query.value || "No value provided");
-// function goBack() {
-//   if (router.canGoBack()) {
-//     router.back();
-//     router.push({
-//       path: "/",
-//       query: { value: route.query.value || "Guest" },
-//     });
-//   }
-// }
+const emit = defineEmits(["close"]);
+function closeChat() {
+  emit("close");
+}
 </script>
 
 <style scoped>
+.chat-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  background-color: #fff;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  overflow: hidden;
+}
 .chat-container {
   display: flex;
   flex-direction: column;
