@@ -90,7 +90,6 @@ onMounted(async () => {
   fill: none;
   margin: 0 auto;
 }
-
 .dot {
   fill: #10b981;
   animation: pulse 0.6s infinite alternate;
